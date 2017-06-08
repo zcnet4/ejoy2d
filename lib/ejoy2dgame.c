@@ -328,7 +328,7 @@ ejoy2d_game_gesture(struct game *G, int type,
 }
 
 void
-ejoy2d_game_message(struct game* G,int id_, const char* state, const char* data, lua_Number n) {
+ejoy2d_game_message(struct game* G,int id_, const char* state, const char* data, int n) {
   lua_State *L = G->L;
   lua_getfield(L, LUA_REGISTRYINDEX, EJOY_MESSAGE);
   lua_pushnumber(L, id_);
