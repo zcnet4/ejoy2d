@@ -6,39 +6,13 @@ if (NOT LUA53_INCLUDE_DIRS)
     #add_subdirectory(../lua5.3 ${CMAKE_CURRENT_LIST_DIR})
 endif(NOT LUA53_INCLUDE_DIRS)
 
-list(APPEND my_include_dirs
-  ${CMAKE_CURRENT_LIST_DIR}
+list(APPEND ejoy2d_include_dirs
+  ${CMAKE_CURRENT_LIST_DIR}/msvc/include
   ${CMAKE_CURRENT_LIST_DIR}/lib/render
   ${CMAKE_CURRENT_LIST_DIR}/lib
   ${CMAKE_CURRENT_LIST_DIR}/msvc/src/glew
-  ${LUA53_INCLUDE_DIRS}
+  ${LUA53_INCLUDE_DIRS}/..
   )
-
-if(WIN32)
-##################################################################################################
-#ejoy2d\ejoy2d.gyp:glew#target
-set(my_target "glew")
-set(TARGET ${my_target})
-set(TOOLSET "target")
-
-list(APPEND my_srcs
-  msvc/src/glew/GL/glew.h
-  msvc/src/glew/GL/glxew.h
-  msvc/src/glew/GL/wglew.h
-  msvc/src/glew/glew.c
-  msvc/src/glew/glewinfo.c
-  msvc/src/glew/visualinfo.c
-  )
-add_library(${my_target} STATIC ${my_srcs} )
-set_property(TARGET ${my_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${my_include_dirs})
-else()
-  
-endif()
-
-unset(TOOLSET)
-unset(TARGET)
-unset(my_srcs)
-unset(my_target)
 
 ##################################################################################################
 #ejoy2d\ejoy2d.gyp:ejoy2d#target
@@ -46,7 +20,7 @@ set(my_target "ejoy2d")
 set(TARGET ${my_target})
 set(TOOLSET "target")
 
-set(EJOY2D_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/include CACHE INTERNAL "ejoy2d include dir")
+set(EJOY2D_INCLUDE_DIRS ${EJOY2D_INCLUDE_DIRS} ${CMAKE_CURRENT_LIST_DIR}/lib CACHE INTERNAL "ejoy2d include dir")
 message("EJOY2D_INCLUDE_DIRS= ${EJOY2D_INCLUDE_DIRS}")
 
 list(APPEND my_srcs
@@ -105,8 +79,27 @@ list(APPEND my_srcs
   lib/render/render.c
   lib/render/render.h
   )
+if(WIN32)
+list(APPEND my_srcs
+  #glew
+  msvc/src/glew/GL/glew.h
+  msvc/src/glew/GL/wglew.h
+  msvc/src/glew/glew.c
+  #win-lua
+  msvc/include/lauxlib.h
+  msvc/include/lua.h
+  msvc/include/lua_path.h
+  msvc/include/lualib.h
+  msvc/include/stdbool.h
+  #winfont
+  mingw/winfont.c
+)
+else()
+
+endif()
+
 add_library(${my_target} STATIC ${my_srcs} )
-set_property(TARGET ${my_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${my_include_dirs})
+set_property(TARGET ${my_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${ejoy2d_include_dirs})
 #target_compile_definitions(${my_target}
   #PUBLIC LUA_BUILD_AS_DLL=1
 #)
@@ -115,8 +108,9 @@ target_link_libraries(${my_target}
   "lua5.3"
 )
 if(WIN32)
+  set_target_properties(${my_target} PROPERTIES COMPILE_DEFINITIONS "EJOY2D_LUA=include;GLEW_STATIC")
   set_target_properties(${my_target} PROPERTIES COMPILE_FLAGS "/TP") #CXX
-  target_link_libraries(${my_target} "glew")
+  target_link_libraries(${my_target} opengl32)
 else()
   
 endif()
